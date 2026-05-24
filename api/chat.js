@@ -31,7 +31,6 @@ export default async function handler(req, res) {
 
     let reply = "Pas de réponse IA";
 
-    // format OpenAI-like
     if (
       data &&
       data.choices &&
@@ -41,20 +40,8 @@ export default async function handler(req, res) {
       reply = data.choices[0].message.content;
     }
 
-    // format alternatif HF
-    else if (
-      data &&
-      data.generated_text
-    ) {
-      reply = data.generated_text;
-    }
-
-    // erreur HF
-    else if (
-      data &&
-      data.error
-    ) {
-      reply = "Erreur HF : " + data.error;
+    else if (data && data.error) {
+      reply = "Erreur HF : " + JSON.stringify(data.error);
     }
 
     res.status(200).json({ reply });
