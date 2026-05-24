@@ -2,103 +2,110 @@
 <html lang="fr">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Chat IA</title>
+<title>Assistant IA</title>
 
 <style>
 
-body {
-  margin: 0;
-  background: #f5f5f5;
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+body{
+  margin:0;
+  background:#f3f4f6;
+  font-family:Arial,sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
 
-#container {
-  width: 420px;
-  height: 650px;
-  background: white;
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-  overflow: hidden;
+#container{
+  width:420px;
+  height:700px;
+  background:white;
+  border-radius:20px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,0.15);
 }
 
-#header {
-  background: #111827;
-  color: white;
-  padding: 18px;
-  font-size: 20px;
-  font-weight: bold;
+#header{
+  background:#111827;
+  color:white;
+  padding:20px;
+  font-size:20px;
+  font-weight:bold;
 }
 
-#chat {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
-  background: #f9fafb;
+#chat{
+  flex:1;
+  overflow-y:auto;
+  padding:15px;
+  background:#f9fafb;
 }
 
-.message {
-  margin-bottom: 15px;
-  max-width: 80%;
-  padding: 12px 15px;
-  border-radius: 15px;
-  line-height: 1.4;
+.message{
+  max-width:80%;
+  padding:12px 15px;
+  margin-bottom:15px;
+  border-radius:15px;
+  line-height:1.5;
 }
 
-.user {
-  background: #2563eb;
-  color: white;
-  margin-left: auto;
-  border-bottom-right-radius: 5px;
+.user{
+  background:#2563eb;
+  color:white;
+  margin-left:auto;
+  border-bottom-right-radius:5px;
 }
 
-.bot {
-  background: #e5e7eb;
-  color: #111827;
-  margin-right: auto;
-  border-bottom-left-radius: 5px;
+.bot{
+  background:#e5e7eb;
+  color:#111827;
+  margin-right:auto;
+  border-bottom-left-radius:5px;
 }
 
-#input-area {
-  display: flex;
-  border-top: 1px solid #ddd;
-  padding: 10px;
-  background: white;
+#input-area{
+  display:flex;
+  padding:10px;
+  border-top:1px solid #ddd;
+  background:white;
 }
 
-#input {
-  flex: 1;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 15px;
-  outline: none;
+#input{
+  flex:1;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  font-size:15px;
+  outline:none;
 }
 
-button {
-  margin-left: 10px;
-  border: none;
-  background: #2563eb;
-  color: white;
-  padding: 12px 18px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 15px;
+button{
+  margin-left:10px;
+  border:none;
+  background:#2563eb;
+  color:white;
+  padding:12px 18px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:15px;
 }
 
-button:hover {
-  background: #1d4ed8;
+button:hover{
+  background:#1d4ed8;
+}
+
+.typing{
+  opacity:0.7;
+  font-style:italic;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -112,24 +119,29 @@ button:hover {
   <div id="chat"></div>
 
   <div id="input-area">
+
     <input
       id="input"
       type="text"
       placeholder="Écris ton message..."
     />
-    <button onclick="sendMessage()">Envoyer</button>
+
+    <button onclick="sendMessage()">
+      Envoyer
+    </button>
+
   </div>
 
 </div>
 
 <script>
 
-async function sendMessage() {
+async function sendMessage(){
 
   const input = document.getElementById("input");
   const message = input.value.trim();
 
-  if (!message) return;
+  if(!message) return;
 
   const chat = document.getElementById("chat");
 
@@ -140,26 +152,39 @@ async function sendMessage() {
     </div>
   `;
 
-  input.value = "";
+  input.value="";
 
-  // scroll
+  // typing
+  const typingId = "typing-" + Date.now();
+
+  chat.innerHTML += `
+    <div class="message bot typing" id="${typingId}">
+      IA écrit...
+    </div>
+  `;
+
   chat.scrollTop = chat.scrollHeight;
 
-  try {
+  try{
 
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
+    const response = await fetch("/api/chat",{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
       },
-      body: JSON.stringify({
+
+      body:JSON.stringify({
         message
       })
+
     });
 
     const data = await response.json();
 
-    // réponse IA
+    document.getElementById(typingId).remove();
+
     chat.innerHTML += `
       <div class="message bot">
         ${data.reply}
@@ -168,25 +193,31 @@ async function sendMessage() {
 
     chat.scrollTop = chat.scrollHeight;
 
-  } catch (error) {
+  }
+
+  catch(error){
+
+    document.getElementById(typingId).remove();
 
     chat.innerHTML += `
       <div class="message bot">
         Erreur de connexion.
       </div>
     `;
+
   }
+
 }
 
-// envoyer avec ENTER
-document.getElementById("input")
-  .addEventListener("keypress", function(e) {
+document
+.getElementById("input")
+.addEventListener("keypress",function(e){
 
-    if (e.key === "Enter") {
-      sendMessage();
-    }
+  if(e.key==="Enter"){
+    sendMessage();
+  }
 
-  });
+});
 
 </script>
 
