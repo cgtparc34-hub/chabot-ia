@@ -12,28 +12,21 @@ export default async function handler(req, res) {
           "Authorization": `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json"
         },
-
         body: JSON.stringify({
-
-          model: "meta-llama/Llama-3.1-8B-Instruct",
-
+          model: "Qwen/Qwen2.5-72B-Instruct",
           messages: [
             {
               role: "system",
-              content:
-                "Tu es un assistant clair. Tu réponds toujours en français. Quand tu proposes des options, termine par: CHOIX: option1 | option2 | option3"
+              content: "Tu es un assistant utile et tu réponds en français."
             },
             {
               role: "user",
               content: message
             }
           ],
-
           max_tokens: 300,
           temperature: 0.7
-
         })
-
       }
     );
 
@@ -41,10 +34,14 @@ export default async function handler(req, res) {
 
     console.log("HF RESPONSE:", JSON.stringify(data));
 
-    let reply = "Erreur IA";
+    let reply = "";
 
     if (data?.choices?.[0]?.message?.content) {
       reply = data.choices[0].message.content;
+    }
+
+    else if (data?.generated_text) {
+      reply = data.generated_text;
     }
 
     else if (data?.error) {
@@ -52,7 +49,7 @@ export default async function handler(req, res) {
     }
 
     else {
-      reply = "Aucune réponse du modèle";
+      reply = "Réponse vide ou format inconnu";
     }
 
     res.status(200).json({ reply });
