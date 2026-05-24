@@ -16,11 +16,15 @@ export default async function handler(req, res) {
           model: "openai/gpt-oss-20b",
           messages: [
             {
+              role: "system",
+              content: "Tu réponds toujours en français. Tu es un assistant utile, moderne et sympathique."
+            },
+            {
               role: "user",
               content: message
             }
           ],
-          max_tokens: 100
+          max_tokens: 150
         })
       }
     );
