@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const response = await fetch(
       "https://router.huggingface.co/v1/chat/completions",
       {
-        method: "POST",
+        method: "POSt",
         headers: {
           "Authorization": `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json"
