@@ -1,38 +1,54 @@
+let chatHistory = [];
+
 export default async function handler(req, res) {
 
   try {
 
     const message = req.body.message;
 
+    // ajoute message user
+    chatHistory.push({
+      role: "user",
+      content: message
+    });
+
+    // limite mémoire (évite explosion)
+    if (chatHistory.length > 10) {
+      chatHistory.shift();
+    }
+
     const response = await fetch(
       "https://router.huggingface.co/v1/chat/completions",
       {
-        method: "POSt",
+        method: "POST",
         headers: {
           "Authorization": `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
+
           model: "Qwen/Qwen2.5-72B-Instruct",
+
           messages: [
             {
               role: "system",
-              content: "Tu es un assistant utile et tu réponds en français."
+              content:
+                "Tu es un assistant intelligent. Tu te souviens du contexte précédent de la conversation."
             },
-            {
-              role: "user",
-              content: message
-            }
+
+            ...chatHistory
+
           ],
+
           max_tokens: 300,
           temperature: 0.7
+
         })
       }
     );
 
     const data = await response.json();
-
-    console.log("HF RESPONSE:", JSON.stringify(data));
 
     let reply = "";
 
@@ -40,23 +56,19 @@ export default async function handler(req, res) {
       reply = data.choices[0].message.content;
     }
 
-    else if (data?.generated_text) {
-      reply = data.generated_text;
-    }
-
-    else if (data?.error) {
-      reply = "Erreur HF : " + JSON.stringify(data.error);
-    }
-
     else {
-      reply = "Réponse vide ou format inconnu";
+      reply = "Erreur ou réponse vide";
     }
+
+    // ajoute réponse IA à la mémoire
+    chatHistory.push({
+      role: "assistant",
+      content: reply
+    });
 
     res.status(200).json({ reply });
 
   } catch (error) {
-
-    console.log(error);
 
     res.status(500).json({
       reply: "Erreur serveur"
