@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
     // 📥 Télécharger PDF depuis Google Drive (public simple)
     const pdfResponse = await fetch(
-      `https://drive.google.com/uc?export=download&id=${fileId}`
+      `https://docs.google.com/document/d/1x9qsBEjlCF-5VUObYa5ksWPg13dRL2ConexR-uBdQ9c/edit?usp=sharing{fileId}`
     );
 
     const arrayBuffer = await pdfResponse.arrayBuffer();
