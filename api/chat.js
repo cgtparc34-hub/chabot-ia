@@ -19,29 +19,52 @@ export default async function handler(req, res) {
               role: "user",
               content: message
             }
-          ]
+          ],
+          max_tokens: 100
         })
       }
     );
 
     const data = await response.json();
 
-    console.log(data);
+    console.log(JSON.stringify(data));
 
-    const reply =
-      data?.choices?.[0]?.message?.content ||
-      "Pas de réponse IA";
+    let reply = "Pas de réponse IA";
 
-    res.status(200).json({
-      reply
-    });
+    // format OpenAI-like
+    if (
+      data &&
+      data.choices &&
+      data.choices[0] &&
+      data.choices[0].message
+    ) {
+      reply = data.choices[0].message.content;
+    }
+
+    // format alternatif HF
+    else if (
+      data &&
+      data.generated_text
+    ) {
+      reply = data.generated_text;
+    }
+
+    // erreur HF
+    else if (
+      data &&
+      data.error
+    ) {
+      reply = "Erreur HF : " + data.error;
+    }
+
+    res.status(200).json({ reply });
 
   } catch (error) {
 
     console.error(error);
 
     res.status(500).json({
-      reply: "Erreur IA"
+      reply: "Erreur serveur"
     });
   }
 }
