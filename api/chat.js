@@ -13,7 +13,7 @@ export default async function handler(req, res) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "mistralai/Mistral-7B-Instruct-v0.2",
+          model: "openai/gpt-oss-20b",
           messages: [
             {
               role: "user",
