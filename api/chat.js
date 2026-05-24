@@ -13,18 +13,19 @@ export default async function handler(req, res) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "openai/gpt-oss-20b",
+          model: "meta-llama/Llama-3.1-8B-Instruct",
           messages: [
             {
               role: "system",
-              content: "Tu réponds toujours en français. Tu es un assistant utile, moderne et sympathique."
+              content: "Tu réponds toujours en français et de manière utile."
             },
             {
               role: "user",
               content: message
             }
           ],
-          max_tokens: 150
+          max_tokens: 200,
+          temperature: 0.7
         })
       }
     );
