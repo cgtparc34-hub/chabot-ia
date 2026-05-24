@@ -1,4 +1,4 @@
-let chatHistory = [];
+import pdf from "pdf-parse";
 
 export default async function handler(req, res) {
 
@@ -6,17 +6,21 @@ export default async function handler(req, res) {
 
     const message = req.body.message;
 
-    // ajoute message user
-    chatHistory.push({
-      role: "user",
-      content: message
-    });
+    const fileId = process.env.DRIVE_FILE_ID;
 
-    // limite mémoire (évite explosion)
-    if (chatHistory.length > 10) {
-      chatHistory.shift();
-    }
+    // 📥 Télécharger PDF depuis Google Drive (public simple)
+    const pdfResponse = await fetch(
+      `https://drive.google.com/uc?export=download&id=${fileId}`
+    );
 
+    const arrayBuffer = await pdfResponse.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // 📖 extraire texte PDF
+    const dataPdf = await pdf(buffer);
+    const text = dataPdf.text.slice(0, 8000);
+
+    // 🤖 envoyer à l’IA
     const response = await fetch(
       "https://router.huggingface.co/v1/chat/completions",
       {
@@ -25,54 +29,39 @@ export default async function handler(req, res) {
           "Authorization": `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json"
         },
-
         body: JSON.stringify({
-
-          model: "Qwen/Qwen2.5-72B-Instruct",
-
+          model: "meta-llama/Llama-3.1-8B-Instruct",
           messages: [
             {
               role: "system",
-              content:
-                "Tu es un assistant intelligent. Tu te souviens du contexte précédent de la conversation."
+              content: "Tu es un assistant qui répond uniquement à partir du document fourni."
             },
-
-            ...chatHistory
-
+            {
+              role: "user",
+              content: `DOCUMENT:\n${text}\n\nQUESTION:\n${message}`
+            }
           ],
-
-          max_tokens: 300,
-          temperature: 0.7
-
+          max_tokens: 400,
+          temperature: 0.3
         })
       }
     );
 
-    const data = await response.json();
+    const ai = await response.json();
 
-    let reply = "";
-
-    if (data?.choices?.[0]?.message?.content) {
-      reply = data.choices[0].message.content;
-    }
-
-    else {
-      reply = "Erreur ou réponse vide";
-    }
-
-    // ajoute réponse IA à la mémoire
-    chatHistory.push({
-      role: "assistant",
-      content: reply
-    });
+    let reply =
+      ai?.choices?.[0]?.message?.content ||
+      ai?.generated_text ||
+      "Erreur IA";
 
     res.status(200).json({ reply });
 
   } catch (error) {
 
-    res.status(500).json({
-      reply: "Erreur serveur"
-    });
+    console.log(error);
 
+    res.status(500).json({
+      reply: "Erreur serveur PDF"
+    });
   }
 }
