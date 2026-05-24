@@ -12,6 +12,7 @@ export default async function handler(req, res) {
           "Authorization": `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
 
           model: "meta-llama/Llama-3.1-8B-Instruct",
@@ -19,7 +20,8 @@ export default async function handler(req, res) {
           messages: [
             {
               role: "system",
-              content: "Tu es un assistant utile. Réponds toujours en français simplement."
+              content:
+                "Tu es un assistant clair. Tu réponds toujours en français. Quand tu proposes des options, termine par: CHOIX: option1 | option2 | option3"
             },
             {
               role: "user",
@@ -31,17 +33,26 @@ export default async function handler(req, res) {
           temperature: 0.7
 
         })
+
       }
     );
 
     const data = await response.json();
 
-    console.log("HF RESPONSE:", data);
+    console.log("HF RESPONSE:", JSON.stringify(data));
 
-    let reply = "Erreur ou réponse vide";
+    let reply = "Erreur IA";
 
     if (data?.choices?.[0]?.message?.content) {
       reply = data.choices[0].message.content;
+    }
+
+    else if (data?.error) {
+      reply = "Erreur HF : " + JSON.stringify(data.error);
+    }
+
+    else {
+      reply = "Aucune réponse du modèle";
     }
 
     res.status(200).json({ reply });
