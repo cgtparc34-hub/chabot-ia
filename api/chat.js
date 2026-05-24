@@ -12,24 +12,29 @@ export default async function handler(req, res) {
           "Authorization": `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
 
           model: "Qwen/Qwen2.5-72B-Instruct",
 
           messages: [
+
             {
               role: "system",
               content:
-                "Tu es un assistant clair et utile. Quand tu proposes des choix, termine toujours par: CHOIX: option1 | option2 | option3 (max 3 options). Réponds toujours en français."
+                "Tu es un assistant intelligent, moderne et utile. Tu réponds toujours en français clairement."
             },
+
             {
               role: "user",
               content: message
             }
+
           ],
 
-          max_tokens: 300,
-          temperature: 0.7
+          temperature: 0.7,
+          top_p: 0.9,
+          max_tokens: 300
 
         })
       }
@@ -37,37 +42,41 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    console.log("HF RESPONSE:", JSON.stringify(data));
+    console.log(JSON.stringify(data));
 
-    let reply = "";
+    let reply = "Pas de réponse IA";
 
-    // CAS PRINCIPAL
-    if (data?.choices?.[0]?.message?.content) {
+    if (
+      data &&
+      data.choices &&
+      data.choices[0] &&
+      data.choices[0].message
+    ) {
+
       reply = data.choices[0].message.content;
+
     }
 
-    // CAS ALTERNATIF (sécurité)
-    else if (data?.generated_text) {
-      reply = data.generated_text;
-    }
+    else if (data && data.error) {
 
-    // CAS ERREUR
-    else if (data?.error) {
       reply = "Erreur HF : " + JSON.stringify(data.error);
+
     }
 
-    else {
-      reply = "Aucune réponse reçue du modèle.";
-    }
+    res.status(200).json({
+      reply
+    });
 
-    res.status(200).json({ reply });
+  }
 
-  } catch (error) {
+  catch (error) {
 
     console.error(error);
 
     res.status(500).json({
       reply: "Erreur serveur"
     });
+
   }
+
 }
