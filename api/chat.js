@@ -12,29 +12,23 @@ export default async function handler(req, res) {
           "Authorization": `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json"
         },
-
         body: JSON.stringify({
 
-          model: "Qwen/Qwen2.5-72B-Instruct",
+          model: "meta-llama/Llama-3.1-8B-Instruct",
 
           messages: [
-
             {
               role: "system",
-              content:
-                "Tu es un assistant intelligent, moderne et utile. Tu réponds toujours en français clairement."
+              content: "Tu es un assistant utile. Réponds toujours en français simplement."
             },
-
             {
               role: "user",
               content: message
             }
-
           ],
 
-          temperature: 0.7,
-          top_p: 0.9,
-          max_tokens: 300
+          max_tokens: 300,
+          temperature: 0.7
 
         })
       }
@@ -42,41 +36,23 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    console.log(JSON.stringify(data));
+    console.log("HF RESPONSE:", data);
 
-    let reply = "Pas de réponse IA";
+    let reply = "Erreur ou réponse vide";
 
-    if (
-      data &&
-      data.choices &&
-      data.choices[0] &&
-      data.choices[0].message
-    ) {
-
+    if (data?.choices?.[0]?.message?.content) {
       reply = data.choices[0].message.content;
-
     }
 
-    else if (data && data.error) {
+    res.status(200).json({ reply });
 
-      reply = "Erreur HF : " + JSON.stringify(data.error);
+  } catch (error) {
 
-    }
-
-    res.status(200).json({
-      reply
-    });
-
-  }
-
-  catch (error) {
-
-    console.error(error);
+    console.log(error);
 
     res.status(500).json({
       reply: "Erreur serveur"
     });
 
   }
-
 }
