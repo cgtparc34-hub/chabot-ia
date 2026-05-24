@@ -104,6 +104,17 @@ button:hover{
   font-style:italic;
 }
 
+.keyword{
+  color:#2563eb;
+  font-weight:bold;
+  cursor:pointer;
+  text-decoration:underline;
+}
+
+.keyword:hover{
+  opacity:0.8;
+}
+
 </style>
 
 </head>
@@ -136,6 +147,39 @@ button:hover{
 
 <script>
 
+// mots-clés cliquables
+const keywords = {
+
+  "tarifs": "https://monsite.com/tarifs",
+
+  "contact": "https://monsite.com/contact",
+
+  "services": "https://monsite.com/services",
+
+  "WhatsApp": "https://wa.me/33600000000"
+
+};
+
+// transforme les mots en liens
+function highlightKeywords(text){
+
+  Object.keys(keywords).forEach(word => {
+
+    const regex = new RegExp(`\\b${word}\\b`, "gi");
+
+    text = text.replace(
+
+      regex,
+
+      `<span class="keyword" onclick="window.open('${keywords[word]}','_blank')">${word}</span>`
+
+    );
+
+  });
+
+  return text;
+}
+
 async function sendMessage(){
 
   const input = document.getElementById("input");
@@ -154,7 +198,7 @@ async function sendMessage(){
 
   input.value="";
 
-  // typing
+  // IA écrit...
   const typingId = "typing-" + Date.now();
 
   chat.innerHTML += `
@@ -185,9 +229,10 @@ async function sendMessage(){
 
     document.getElementById(typingId).remove();
 
+    // réponse IA
     chat.innerHTML += `
       <div class="message bot">
-        ${data.reply}
+        ${highlightKeywords(data.reply)}
       </div>
     `;
 
@@ -209,6 +254,7 @@ async function sendMessage(){
 
 }
 
+// envoyer avec ENTER
 document
 .getElementById("input")
 .addEventListener("keypress",function(e){
