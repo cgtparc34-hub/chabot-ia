@@ -66,7 +66,7 @@ button {
 
 <script>
 
-// 🔑 METS TA CLÉ ICI
+// 🔑 METS TA CLÉ HUGGING FACE ICI
 const API_KEY = "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";
 
 async function send() {
@@ -85,7 +85,7 @@ async function send() {
   try {
 
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill",
+      "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
       {
         method: "POST",
         headers: {
@@ -100,17 +100,29 @@ async function send() {
 
     const data = await response.json();
 
-    let reply = "Erreur IA";
+    console.log(data); // utile pour debug
 
-    if (data && data[0] && data[0].generated_text) {
+    let reply = "";
+
+    // gestion des réponses possibles HF
+    if (Array.isArray(data) && data[0]?.generated_text) {
       reply = data[0].generated_text;
+    } 
+    else if (data?.generated_text) {
+      reply = data.generated_text;
+    } 
+    else if (data?.error) {
+      reply = "Erreur IA: " + data.error;
+    } 
+    else {
+      reply = "IA indisponible pour le moment";
     }
 
     chat.innerHTML += `<div class='bot'>${reply}</div>`;
     chat.scrollTop = chat.scrollHeight;
 
   } catch (error) {
-    chat.innerHTML += `<div class='bot'>Erreur de connexion</div>`;
+    chat.innerHTML += `<div class='bot'>Erreur de connexion réseau</div>`;
   }
 }
 
